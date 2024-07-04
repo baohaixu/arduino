@@ -1,41 +1,29 @@
-#define PIN_OUT 2
-#define PIN_SCK 3
-#define LED_GRUEN 4
-#define LED_GELB 5
-#define LED_ROT 6
-#define BUZZER 7
-#define SENSOR_PIN A0
-
 #include <Wire.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 #include <RCSwitch.h>
+#include "PressureMonitor.h"
 
+#define PIN_OUT 2
+#define PIN_SCK 3
+#define BUZZER 7
+#define SENSOR_PIN A0
 #define SCREEN_WIDTH 128
 #define SCREEN_HEIGHT 64
 
 RCSwitch rcSwitch = RCSwitch();
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
 
-// Struktur für Schwellenwerte
-struct Thresholds
-{
-  int low;
-  long high;
-  const char *message;
-  int ledPin;
-  bool buzzer;
-};
+// Define the threshold values
+ThresholdValues thresholdValues[] = {
+    {1631, 1351, 1131, 0},
+    {163, 135, 113, 0}};
 
-// Größter möglicher Wert für einen int
-const long INT_MAX = 2147483647L;
+// Initialize PressureMonitor instances
+PressureMonitor pressureMonitor1(thresholdValues[0]);
+PressureMonitor pressureMonitor2(thresholdValues[1]);
 
-// Initialisiere Schwellenwerte
-Thresholds thresholds[] = {
-    {1631, INT_MAX, "K N I C K", LED_ROT, true},
-    {1351, 1500, " VERDREHT", LED_ROT, true},
-    {1131, 1350, " NORMAL", LED_GRUEN, false},
-    {0, 1150, " entfernt", LED_GELB, true}};
+PressureMonitor &pressureMonitor = pressureMonitor1; // Select which one to use
 
 void setup()
 {
@@ -113,20 +101,17 @@ void loop()
   itoa(resultat, sendValue, 10); // Konvertiert 'resultat' in eine Zeichenkette
 
   // Überprüfe Schwellenwerte
-  for (size_t i = 0; i < sizeof(thresholds) / sizeof(thresholds[0]); i++)
+  Threshold *matchingThreshold = pressureMonitor.getMatchingThreshold(resultat);
+  if (matchingThreshold != nullptr)
   {
-    if (resultat >= thresholds[i].low && resultat <= thresholds[i].high)
+    Serial.println(resultat);
+    display.println(matchingThreshold->message);
+    digitalWrite(matchingThreshold->ledPin, HIGH);
+    if (matchingThreshold->buzzer)
     {
-      Serial.println(resultat);
-      display.println(thresholds[i].message);
-      digitalWrite(thresholds[i].ledPin, HIGH);
-      if (thresholds[i].buzzer)
-      {
-        digitalWrite(BUZZER, HIGH);
-      }
-      rcSwitch.send(sendValue);
-      break;
+      digitalWrite(BUZZER, HIGH);
     }
+    rcSwitch.send(sendValue);
   }
 
   display.display();
