@@ -115,7 +115,6 @@ void loop()
   {
 
     Serial.println(resultat);
-
     display.println(" VERDREHT");
     digitalWrite(7, HIGH);
     digitalWrite(5, HIGH);
@@ -138,7 +137,6 @@ void loop()
 
   if (resultat < 1150)
   {
-
     Serial.println(resultat);
     Serial.println("entfernt");
     display.println(" entfernt");
