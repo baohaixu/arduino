@@ -5,9 +5,7 @@
 
 RCSwitch rcSwitch = RCSwitch();
 
-// Define the threshold values
-
-PressureMonitor pressureMonitor; // Select which one to use
+PressureMonitor pressureMonitor;
 
 void setup()
 {

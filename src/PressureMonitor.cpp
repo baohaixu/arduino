@@ -71,6 +71,12 @@ void PressureMonitor::displayResult()
 {
   display.println(status->message);
   display.display();
+  delay(1000);
+  display.print("low = ");
+  display.println(status->low);
+  display.print("high = ");
+  display.println(status->high);
+  display.display();
 }
 
 void PressureMonitor::displayInit()
