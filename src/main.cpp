@@ -7,6 +7,28 @@ RCSwitch rcSwitch = RCSwitch();
 
 PressureMonitor pressureMonitor;
 
+// Definition der Schwellenwerte
+ThresholdValues thresholdValues[] = {
+    {1631, 1351, 1131, 0},
+    {1531, 1271, 1071, 0},
+    {163, 135, 113, 0}};
+
+// Funktion zur Auswahl der ThresholdValues
+void initializePressureMonitor(PressureMonitor &pressureMonitor)
+{
+  pressureMonitor.displayInit();
+  delay(2000);
+  int resultat = pressureMonitor.readResult();
+  for (size_t i = 0; i < sizeof(thresholdValues) / sizeof(thresholdValues[0]); ++i)
+  {
+    if (resultat >= (thresholdValues[i].knickLow - 100) && resultat <= (thresholdValues[i].knickLow + 100))
+    {
+      pressureMonitor = PressureMonitor(thresholdValues[i]);
+      break;
+    }
+  }
+}
+
 void setup()
 {
   Serial.begin(9600);
@@ -20,21 +42,9 @@ void setup()
   }
   pinMode(PIN_OUT, INPUT);
   pinMode(PIN_SCK, OUTPUT);
-
-  ThresholdValues thresholdValues[] = {
-      {1631, 1351, 1131, 0},
-      {163, 135, 113, 0}};
-  pressureMonitor.displayInit();
-  delay(2000);
-  int resultat = pressureMonitor.readResult();
-  if (resultat >= 1531 && resultat <= 1731)
-  {
-    pressureMonitor = PressureMonitor(thresholdValues[0]);
-  }
-  else
-  {
-    pressureMonitor = PressureMonitor(thresholdValues[1]);
-  }
+  // Initialisiere den PressureMonitor mit den passenden ThresholdValues
+  pressureMonitor = PressureMonitor(thresholdValues[0]);
+  // initializePressureMonitor(pressureMonitor);
 }
 
 void loop()
